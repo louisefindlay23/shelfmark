@@ -1,0 +1,54 @@
+name: Nightly fork image
+# Fork-only. Rebuilds the full image from upstream main plus the patch commits on
+# this branch, so a patched image is always available at
+# ghcr.io/<owner>/shelfmark:nightly. Scheduled runs only fire on the default
+# branch, so local/main must be the fork's default branch.
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+permissions: read-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      # Rebase in the runner only (nothing is pushed). A conflict fails the run,
+      # so the last good nightly image stays in place until the patches are fixed.
+      - name: Rebase patches onto upstream main
+        run: |
+          git config user.name "nightly-build"
+          git config user.email "nightly-build@users.noreply.github.com"
+          git remote add upstream https://github.com/calibrain/shelfmark.git
+          git fetch upstream main
+          git rebase upstream/main
+
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          platforms: linux/amd64 # shortcut: add linux/arm64 if the NAS is ARM; it triples build time
+          context: .
+          target: shelfmark
+          push: true
+          build-args: |
+            BUILD_VERSION=nightly-${{ github.sha }}
+            RELEASE_VERSION=nightly
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/shelfmark:nightly
+          cache-from: type=gha
+          cache-to: type=gha,ignore-error=true
