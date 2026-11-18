@@ -1,7 +1,7 @@
 name: Nightly fork image
-# Fork-only. Rebuilds the full image from upstream main plus the patch commits on
+# Fork-only. Rebuilds the lite image from upstream main plus the patch commits on
 # this branch, so a patched image is always available at
-# ghcr.io/<owner>/shelfmark:nightly. Scheduled runs only fire on the default
+# ghcr.io/<owner>/shelfmark-lite:nightly. Scheduled runs only fire on the default
 # branch, so local/main must be the fork's default branch.
 on:
   schedule:
@@ -43,12 +43,12 @@ jobs:
         with:
           platforms: linux/amd64 # shortcut: add linux/arm64 if the NAS is ARM; it triples build time
           context: .
-          target: shelfmark
+          target: shelfmark-lite
           push: true
           build-args: |
             BUILD_VERSION=nightly-${{ github.sha }}
             RELEASE_VERSION=nightly
           tags: |
-            ghcr.io/${{ github.repository_owner }}/shelfmark:nightly
+            ghcr.io/${{ github.repository_owner }}/shelfmark-lite:nightly
           cache-from: type=gha
           cache-to: type=gha,ignore-error=true
