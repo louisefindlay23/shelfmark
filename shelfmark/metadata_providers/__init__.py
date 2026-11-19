@@ -204,6 +204,7 @@ class BookMetadata:
     description: str | None = None
     publisher: str | None = None
     publish_year: int | None = None
+    release_date: str | None = None  # ISO YYYY-MM-DD when the provider knows the full date
     language: str | None = None
     genres: list[str] = field(default_factory=list)
     source_url: str | None = None  # Link to book on provider's site

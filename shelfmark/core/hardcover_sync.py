@@ -219,6 +219,15 @@ def _already_downloaded(
     return False
 
 
+def _is_unreleased(book: BookMetadata) -> bool:
+    """True when the book's release date, or failing that its year, is still ahead."""
+    today = datetime.now(UTC).date()
+    try:
+        return datetime.fromisoformat(str(book.release_date)[:10]).date() > today
+    except ValueError:
+        return bool(book.publish_year and book.publish_year > today.year)
+
+
 def _fetch_status_books(provider: Any, status_id: int) -> tuple[list[BookMetadata], bool]:
     """Page through a Hardcover status shelf: the books read, and whether a fetch failed."""
     books: list[BookMetadata] = []
@@ -286,6 +295,9 @@ def sync_wishlist(
             if fetch_failed:
                 summary["errors"] += 1
             for book in shelf:
+                if _is_unreleased(book):
+                    summary["skipped"] += 1
+                    continue
                 provider_id = str(book.provider_id)
                 author = _primary_author(book)
 
