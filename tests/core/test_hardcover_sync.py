@@ -1,7 +1,7 @@
 """Tests for syncing Hardcover status shelves into pending requests."""
 
 import sqlite3
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
@@ -334,6 +334,28 @@ class TestSyncWishlist:
 
     def _use_provider(self, monkeypatch, provider):
         monkeypatch.setattr(hardcover_sync, "_build_provider", lambda: provider)
+
+    def test_a_book_due_in_a_future_year_is_not_requested(self, user_db, db_path, monkeypatch):
+        user = user_db.create_user(username="reader", role="user")
+        today = datetime.now(UTC).date()
+        later = (today + timedelta(days=1)).isoformat()
+        provider = _Provider(
+            {
+                1: [
+                    [
+                        _book(1, "Later This Year", release_date=later),
+                        _book(3, "Next Year", publish_year=today.year + 1),
+                        _book(2, "Out Now", publish_year=2020, release_date="2020-05-01"),
+                    ]
+                ]
+            }
+        )
+        self._use_provider(monkeypatch, provider)
+
+        summary = hardcover_sync.sync_wishlist(user_db, db_path=db_path, user_id=user["id"])
+
+        assert summary["added"] == 1
+        assert summary["skipped"] == 2
 
     def test_a_failed_shelf_fetch_is_counted_as_an_error(self, user_db, db_path, monkeypatch):
         user = user_db.create_user(username="reader", role="user")

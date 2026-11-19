@@ -3155,6 +3155,7 @@ class HardcoverProvider(MetadataProvider):
             cover_url=cover_url,
             description=full_description,
             publish_year=publish_year,
+            release_date=book.get("release_date"),
             genres=genres,
             source_url=source_url,
             series_id=series_id,
