@@ -5,6 +5,7 @@ import { SORT_OPTIONS } from '../data/filterOptions';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import type { Book, ButtonStateInfo, SortOption } from '../types';
 import { Dropdown } from './Dropdown';
+import { SeriesWantToReadButton } from './SeriesWantToReadButton';
 import { CardView } from './resultsViews/CardView';
 import { CompactView } from './resultsViews/CompactView';
 import { ListView } from './resultsViews/ListView';
@@ -94,6 +95,9 @@ export const ResultsSection = ({
       <div className="relative z-10 mb-2 flex items-center sm:mb-3">
         {/* Left: Sort control or Hardcover link */}
         <div>
+          {sortValue === 'series_order' && (
+            <SeriesWantToReadButton books={books} onShowToast={onShowToast} />
+          )}
           {showSortControl && (
             <SortControl
               value={sortValue}
