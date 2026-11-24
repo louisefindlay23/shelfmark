@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { isMetadataBook, type Release } from '../types/index';
 import {
+  mergeFullBookDetails,
   transformMetadataToBook,
   transformReleaseToDirectBook,
   transformSourceRecordToBook,
@@ -102,5 +103,51 @@ describe('bookTransformers.transformMetadataToBook', () => {
 
   it('leaves library undefined when the API sends none', () => {
     expect(transformMetadataToBook(metadata).library).toBeUndefined();
+  });
+});
+
+describe('bookTransformers.mergeFullBookDetails', () => {
+  const base = {
+    id: 'hardcover:430448',
+    title: 'The Adventures of Sherlock Holmes',
+    author: 'Arthur Conan Doyle',
+    provider: 'hardcover',
+    provider_id: '430448',
+  };
+  // get_book returns only the featured series
+  const fullBook = {
+    ...base,
+    description: 'Twelve short stories.',
+    series_id: '1098',
+    series_name: 'Sherlock Holmes',
+    series_position: 3,
+    series_count: 10,
+  };
+
+  it('keeps the series the book was opened from', () => {
+    const fromSeriesView = {
+      ...base,
+      series_id: '4786',
+      series_name: 'The Adventures of Sherlock Holmes',
+      series_position: 1,
+      series_count: 12,
+    };
+
+    expect(mergeFullBookDetails(fromSeriesView, fullBook)).toMatchObject({
+      description: 'Twelve short stories.',
+      series_id: '4786',
+      series_name: 'The Adventures of Sherlock Holmes',
+      series_position: 1,
+      series_count: 12,
+    });
+  });
+
+  it('fills the series from the full record when the book has none', () => {
+    expect(mergeFullBookDetails(base, fullBook)).toMatchObject({
+      series_id: '1098',
+      series_name: 'Sherlock Holmes',
+      series_position: 3,
+      series_count: 10,
+    });
   });
 });

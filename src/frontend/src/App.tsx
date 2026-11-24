@@ -85,6 +85,7 @@ import { buildLoginRedirectPath, getReturnToFromSearch } from './utils/authRedir
 import { withBasePath } from './utils/basePath';
 import { emitBookTargetChange } from './utils/bookTargetEvents';
 import { bookSupportsTargets } from './utils/bookTargetLoader';
+import { mergeFullBookDetails } from './utils/bookTransformers';
 import { buildSearchQuery } from './utils/buildSearchQuery';
 import { wasDownloadQueuedAfterResponseError } from './utils/downloadRecovery';
 import { getDynamicOptionGroup } from './utils/dynamicFieldOptions';
@@ -993,14 +994,7 @@ function App() {
     if (metadataBook) {
       try {
         const fullBook = await getMetadataBookInfo(metadataBook.provider, metadataBook.provider_id);
-        setSelectedBook({
-          ...metadataBook,
-          description: fullBook.description || metadataBook.description,
-          series_id: fullBook.series_id || metadataBook.series_id,
-          series_name: fullBook.series_name,
-          series_position: fullBook.series_position,
-          series_count: fullBook.series_count,
-        });
+        setSelectedBook(mergeFullBookDetails(metadataBook, fullBook));
       } catch (error) {
         console.error('Failed to load book description, using search data:', error);
         setSelectedBook(metadataBook);
@@ -1615,14 +1609,7 @@ function App() {
           contentType: normalizedContentType,
         });
         const fullBook = await getMetadataBookInfo(book.provider, book.provider_id);
-        setReleaseBook({
-          ...book,
-          description: fullBook.description || book.description,
-          series_id: fullBook.series_id || book.series_id,
-          series_name: fullBook.series_name,
-          series_position: fullBook.series_position,
-          series_count: fullBook.series_count,
-        });
+        setReleaseBook(mergeFullBookDetails(book, fullBook));
       } catch (error) {
         console.error('Failed to load book description, using search data:', error);
         policyTrace('universal.get:open_release_modal_fallback', {
