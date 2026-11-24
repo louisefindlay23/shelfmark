@@ -59,7 +59,7 @@ jobs:
 
   e2e:
     needs: select-profiles
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # 26.04 kernel lacks iptables-legacy filter table (tor profile)
     # A wedged app under test must not burn GitHub's 6h max job limit. A healthy
     # profile run finishes in ~3-5 min; anything past 25 is hung, not slow.
     timeout-minutes: 25
@@ -89,7 +89,7 @@ jobs:
   e2e-full:
     needs: changes
     if: needs.changes.outputs.relevant == 'true' || github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Real Chrome + qBittorrent is the slowest profile; still nowhere near 40 min.
     timeout-minutes: 40
     name: e2e (full — real Chrome + qBittorrent)
