@@ -174,23 +174,6 @@ const transformSourceBackedDataToBook = (data: SourceBackedBookData): Book => {
   };
 };
 
-/**
- * Merge a provider's full book record into the book a modal was opened from.
- * The book's own series wins: from a series view it is the series being browsed,
- * while the full record only carries the provider's featured series.
- */
-export function mergeFullBookDetails(book: Book, fullBook: Book): Book {
-  const series = book.series_name ? book : fullBook;
-  return {
-    ...book,
-    description: fullBook.description || book.description,
-    series_id: series.series_id || book.series_id,
-    series_name: series.series_name,
-    series_position: series.series_position,
-    series_count: series.series_count,
-  };
-}
-
 export function transformReleaseToDirectBook(release: Release): Book {
   const extra = release.extra || {};
   return transformSourceBackedDataToBook({
