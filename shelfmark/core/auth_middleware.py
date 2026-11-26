@@ -16,7 +16,7 @@ from shelfmark.core.external_user_linking import upsert_external_user
 from shelfmark.core.logger import setup_logger
 from shelfmark.core.request_helpers import normalize_optional_text
 from shelfmark.core.session_auth import revalidate_session
-from shelfmark.core.stats_routes import STATS_PATH
+from shelfmark.core.stats_routes import STATS_PATH, STATS_QUEUE_PATH
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -49,7 +49,7 @@ def _proxy_default_is_admin(db: UserDB) -> bool:
 
 _API_KEY_EXEMPT_PREFIXES = ("/api/auth/",)
 _API_KEY_EXEMPT_PATHS = frozenset({"/api/health"})
-_READ_ONLY_KEY_PATHS = frozenset({STATS_PATH})
+_READ_ONLY_KEY_PATHS = frozenset({STATS_PATH, STATS_QUEUE_PATH})
 
 
 def register_auth_middleware(

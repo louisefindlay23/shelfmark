@@ -73,8 +73,8 @@ curl -s -H "Authorization: Bearer $SHELFMARK_API_KEY" https://shelfmark.example.
 
 ## Read-only key and dashboard stats
 
-Set `SHELFMARK_API_KEY_READONLY` to a second secret for dashboards and monitors. It can read one endpoint,
-`GET /api/stats`, and nothing else. Writes and every other path return 403, and the key never gets a session.
+Set `SHELFMARK_API_KEY_READONLY` to a second secret for dashboards and monitors. It can read two endpoints,
+`GET /api/stats` and `GET /api/stats/queue`, and nothing else. Writes and every other path return 403, and the key never gets a session.
 The admin key reaches `/api/stats` too, and so does a browser session signed in as an admin. A refused request gets `{"error": "This API key is read-only"}`.
 
 ```bash
@@ -83,3 +83,6 @@ curl -s -H "X-Api-Key: $SHELFMARK_API_KEY_READONLY" https://shelfmark.example.co
 
 The response has counts only: books added in the last 7 and 30 days by format, the queue, requests by outcome,
 and download failures in the last 7 days. No titles and no user names.
+
+`/api/stats/queue` lists each queued, active and finished download with title, format, size,
+source, status, progress (0-100) and timestamps. It leaves out ids, authors, user names, file paths and covers.

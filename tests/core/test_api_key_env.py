@@ -489,6 +489,24 @@ class TestReadOnlyKeyRequests:
         response = ro.app.test_client().get(path, headers=_bearer("ro-key"))
         assert response.status_code == 403
 
+    def test_reads_the_trimmed_queue(self, ro, user_db):
+        from shelfmark.core.models import DownloadTask
+        from shelfmark.download.orchestrator import book_queue
+
+        user_db.create_user(username="root", role="admin")
+        task = DownloadTask(task_id="t-q1", source="direct_download", title="Book")
+        task.download_path = "/secret/path.epub"
+        task.username = "alice"
+        book_queue.add(task)
+        try:
+            response = ro.app.test_client().get("/api/stats/queue", headers=_bearer("ro-key"))
+        finally:
+            book_queue.cancel_download("t-q1")
+        assert response.status_code == 200
+        item = next(i for i in response.get_json()["items"] if i["title"] == "Book")
+        assert item["title"] == "Book"
+        assert not {"id", "author", "series_name", "username", "user_id", "download_path", "preview"} & set(item)
+
     @pytest.mark.parametrize("method", ["post", "put", "patch", "delete"])
     def test_cannot_write_even_to_stats(self, ro, user_db, method):
         user_db.create_user(username="root", role="admin")
